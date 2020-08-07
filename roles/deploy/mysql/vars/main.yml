@@ -1,0 +1,8 @@
+# roles/deploy/mysql/vars/main.yml
+---
+# variables for mysql 
+
+wp_mysql_db: wordpress
+wp_mysql_user: wordpress
+wp_mysql_password: root1234
+wp_mysql_host: localhost

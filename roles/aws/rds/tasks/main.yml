@@ -1,0 +1,42 @@
+# roles/deploy/rds/tasks/main.yml
+---
+# creates rds, rds subnet group and stores rds endpoint
+# on endpoint.yml for next play
+
+- name: create rds subnet group
+  rds_subnet_group:
+    state: present
+    name: "{{ vpc_name }}"
+    region: "{{ aws_region }}"
+    description: Subnet group for RDS
+    subnets: 
+    - "{{ vpc_subnet_ids['public-a'] }}"
+    - "{{ vpc_subnet_ids['public-b'] }}"
+    - "{{ vpc_subnet_ids['private-a'] }}"
+    - "{{ vpc_subnet_ids['private-b'] }}"
+  register: rds_subnet_group
+  
+
+- name:  Create AWS RDS database
+  rds:
+    command:             create
+    db_engine:           MySQL
+    region:              "{{ aws_region }}"
+    instance_name:       "{{ wp_mysql_db }}"
+    instance_type:       db.t2.micro
+    username:            "{{ wp_mysql_user }}"
+    password:            "{{ wp_mysql_password }}"
+    size:                10
+    publicly_accessible: yes
+    vpc_security_groups: "{{ vpc_sg_ids['vpc'] }}"
+    wait:                yes
+    wait_timeout:        600
+    subnet:              "{{ vpc_name }}"
+  register:  rds
+
+- name: Store endpoint on yaml file on localhost for next play
+  copy:
+    content: |
+      rds_endpoint: "{{ rds.instance.endpoint }}" 
+    dest: "~/endpoint.yml"
+  become_method: sudo

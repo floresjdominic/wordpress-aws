@@ -1,0 +1,42 @@
+# roles/deploy/wordpress/tasks/main.yml
+---
+# Download, extract, and configure wordpress
+
+- name: Download WordPress
+  sudo: yes  
+  get_url: 
+    url: "https://wordpress.org/latest.tar.gz" 
+    dest: "/tmp/wordpress.tar.gz"
+    validate_certs: no 
+    
+- name: Extract WordPress  
+  sudo: yes
+  unarchive: 
+    src: "/tmp/wordpress.tar.gz" 
+    dest: "/var/www/" 
+    copy: no 
+
+- name: Update default Apache site
+  sudo: yes
+  lineinfile: 
+    dest: "/etc/apache2/sites-enabled/000-default.conf" 
+    regexp: "(.)+DocumentRoot /var/www/html"
+    line: "DocumentRoot /var/www/wordpress"   
+  notify:
+    - restart apache
+
+- name: Copy sample config file
+  command: mv /var/www/wordpress/wp-config-sample.php /var/www/wordpress/wp-config.php creates=/var/www/wordpress/wp-config.php
+  sudo: yes
+
+- name: Update WordPress config file (find and replace with your mysql user data)
+  lineinfile:
+    dest=/var/www/wordpress/wp-config.php
+    regexp="{{ item.regexp }}"
+    line="{{ item.line }}"
+  with_items:
+    - {'regexp': "DB_NAME", 'line': "define('DB_NAME', '{{wp_mysql_db}}');"}        
+    - {'regexp': "DB_USER", 'line': "define('DB_USER', '{{wp_mysql_user}}');"}        
+    - {'regexp': "DB_PASSWORD", 'line': "define('DB_PASSWORD', '{{wp_mysql_password}}');"}
+    - {'regexp': "DB_HOST", 'line': "define('DB_HOST', '{{wp_mysql_host}}');"}
+  sudo: yes

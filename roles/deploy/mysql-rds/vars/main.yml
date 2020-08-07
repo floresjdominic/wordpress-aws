@@ -1,0 +1,8 @@
+# roles/deploy/mysql-rds/vars/main.yml
+---
+# variables for mysql-rds 
+
+wp_mysql_db: wordpress
+wp_mysql_user: wordpress
+wp_mysql_password: root1234
+wp_mysql_host: "{{ rds_endpoint }}" 

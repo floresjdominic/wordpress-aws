@@ -1,0 +1,15 @@
+---
+#roles/aws/ec2/vars
+#Assign parameters as variables for creation of EC2 Instances
+
+key_name: "{{ pem_key }}"
+region: "{{ aws_region }}"
+image: ami-026c8acd92718196b
+instance_type: t2.micro
+vpc_subnet_id: "{{ vpc_subnet_ids['public-a'] }}"
+assign_public_ip: yes
+group: ['vpc', 'allow-public-http', 'allow-public-ssh']
+count_tag: public-a
+exact_count: 1
+instance_tags:
+  Subnet: public-a 

@@ -1,0 +1,11 @@
+# documentation: https://docs.ansible.com/ansible/latest/plugins/inventory/aws_ec2.html
+plugin: aws_ec2
+regions:
+  - us-east-1
+keyed_groups:
+  - prefix: tag
+    key: tags
+
+# some ad hoc 
+# ansible -i hosts_aws_ec2.yml -m ping tag_env_prod -u ubuntu -vvv
+# ansible-inventory -i hosts_aws_ec2.yml --list

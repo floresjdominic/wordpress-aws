@@ -1,0 +1,41 @@
+# wordpress-rds.yml
+# playbook for creating AWS vpc network, rds, and load balanced-ec2 with wordpress installed
+# database & user is created in rds (modify your dbname & password: roles/aws/rds/vars/main.yml)
+---
+# Required: place your credentials in a YAML file (aws-config.yml).  
+# For more details, check /ansible/README.md
+
+# Playbook 1, creating vpc network and ec2, then add created ec2 to elb 
+- hosts: localhost
+  vars_files: 
+    - aws-config.yml #example
+  environment:
+    AWS_ACCESS_KEY_ID:     "{{ aws_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+    AWS_REGION:            "{{ aws_region }}"
+  roles:
+    - aws/vpc   
+    - aws/gateway
+    - aws/rds
+    - aws/ec2
+
+# Playbook 2, installing wordpress on ec2 instance
+- hosts: webserver
+  remote_user: ubuntu
+  become: yes
+  gather_facts: no
+  roles:
+    - deploy/server
+    - deploy/mysql-rds
+    - deploy/wordpress
+
+# Playbook 3, attach create elb and attach ec2 instances on elb
+- hosts: localhost
+  vars_files: 
+    - aws-config.yml
+  environment:
+    AWS_ACCESS_KEY_ID:     "{{ aws_access_key }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_key }}"
+    AWS_REGION:            "{{ aws_region }}"
+  roles:
+     - aws/elb

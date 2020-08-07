@@ -1,0 +1,52 @@
+# roles/aws/ec2/tasks/main.yml
+---
+# create instance(s), add their public ip to hosts, and wait for ssh to come up 
+
+- name: Create Public EC2 instances 
+  ec2:
+    key_name: ansible
+    instance_type: t2.nano
+    image: ami-026c8acd92718196b # for us-east-1 only (ubuntu 18.04)
+    region: "{{ aws_region }}"
+    vpc_subnet_id: "{{ vpc_subnet_ids[item] }}"
+    assign_public_ip: yes
+    group: ['vpc', 'allow-public-http', 'allow-public-ssh']
+    wait: yes
+    instance_tags:
+      application: wordpress
+    exact_count: 1
+    count_tag:
+      application: wordpress
+  with_items: [public-a, public-b]
+  register: ec2  
+
+- name: Add EC2 IP as host
+  add_host:
+    hostname: "{{ item.1.public_ip }}"
+    groupname: webserver
+    host_key_checking: false
+  with_subelements:
+    - "{{ ec2.results }}"
+    - tagged_instances
+
+- name: Add tag to Instance(s)
+  ec2_tag:
+    resource: "{{ item.1.id }}" 
+    region: "{{ region }}" 
+    state: "present"
+  args:
+    tags:
+      Type: webserver
+  with_subelements:
+    - "{{ ec2.results }}"
+    - tagged_instances
+
+- name: Wait for SSH to come up
+  wait_for:
+    host: "{{ item.1.public_ip }}"
+    port: 22 
+    state: started 
+    timeout: 400
+  with_subelements:
+    - "{{ ec2.results }}"
+    - tagged_instances

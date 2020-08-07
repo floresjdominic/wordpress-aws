@@ -1,0 +1,17 @@
+# roles/deploy/mysql-rds/tasks/main.yml
+---
+# MySQL Database with Amazon RDS username, password, port, and endpoint (host)
+
+- include_vars:
+    file: "~/endpoint.yml"
+
+- name: Create mysql database
+  mysql_db: 
+    name: "{{ wp_mysql_db }}" 
+    state: present
+    login_host: "{{ wp_mysql_host }}"
+    login_password: "{{ wp_mysql_password }}"
+    login_user: "{{ wp_mysql_user }}"
+    login_port: 3306  
+
+

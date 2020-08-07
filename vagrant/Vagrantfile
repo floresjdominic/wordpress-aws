@@ -1,0 +1,38 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+
+  # Box Settings
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.box_check_update = false
+
+  # Provider Settings
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = 2048
+    vb.cpus = 4
+  end 
+
+  # Folder Settings - for file sharing between local files and vmbox
+  config.vm.synced_folder "../shared", "/home/vagrant/shared"
+
+  # Network Settings
+  # To forward vmbox port to local pc/laptop (localhost)
+  # config.vm.network "forwarded_port", guest: 80, host: 8080
+  # config.vm.network "forwarded_port", guest: 80, host: 8080, host_ip: "127.0.0.1"
+
+  # To use specific private IP, add IP first to hosts file
+  # config.vm.network "private_network", ip: "192.168.33.10"
+  # config.vm.network "public_network"
+
+  # ssh settings
+  #config.ssh.insert_key = false
+  #config.ssh.private_key_path = ["keys/private", "~/.vagrant.d/insecure_private_key"]
+  #config.vm.provision "file", source: "keys/public", destination: "~/.ssh/authorized_keys"
+
+  # Enable provisioning with a shell script. Additional provisioners such as
+  # Puppet, Chef, Ansible, Salt, and Docker are also available.
+  config.vm.provision "shell", :path => "provision.sh" 
+
+end
+

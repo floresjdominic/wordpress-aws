@@ -1,0 +1,56 @@
+# roles/aws/vpc/defaults/main.yml
+---
+# default variables for vpc, subnet, and sg creation
+# used for aws-play with rds role
+
+# general details about our VPC
+vpc_name: ansibled-vpc
+vpc_key: ansibled-key
+
+# region where vpc (and ec2) will be created
+aws_region: us-east-1
+
+# IP CIDR block for the VPC
+vpc_cidr_block: 10.0.0.0/16
+
+# a map defining the subnets we will build in the VPC
+vpc_subnets:
+  private-a:
+    cidr: 10.0.1.0/24
+    az: "{{ aws_region }}a"
+  public-a:
+    cidr: 10.0.2.0/24
+    az: "{{ aws_region }}a"
+  private-b:
+    cidr: 10.0.3.0/24
+    az: "{{ aws_region }}b"
+  public-b:
+    cidr: 10.0.4.0/24
+    az: "{{ aws_region }}b"
+
+# a list defining the security groups for our VPC
+vpc_security_groups:
+  - name: vpc
+    description: "Allow internal traffic in the VPC"
+    rules:
+      - proto: all
+        group_name: vpc
+        ports: 
+          - 22
+          - 80
+  - name: allow-public-ssh
+    description: "Allow public SSH"
+    rules:
+      - proto: tcp
+        cidr_ip: 0.0.0.0/0
+        ports:
+          - 22
+  - name: allow-public-http
+    description: "Allow public web traffic"
+    rules:
+      - proto: tcp
+        cidr_ip: 0.0.0.0/0
+        ports:
+          - 80
+          - 8080
+          - 443
